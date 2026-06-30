@@ -1,0 +1,16 @@
+{
+  "name": "llm-bridge-gateway",
+  "version": "1.1.0",
+  "description": "LlmBridge - A lightweight, embedded multi-model stream gateway and router with automatic fallback",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

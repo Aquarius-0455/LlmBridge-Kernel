@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LlmBridge - 多模型流式对话桥接器</title>
+  <meta name="description" content="A premium demo of multi-model routing and fallback execution powered by LlmBridge.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode">
+  <header class="app-header">
+    <div class="header-left">
+      <div class="mac-controls">
+        <span class="mac-dot red"></span>
+        <span class="mac-dot yellow"></span>
+        <span class="mac-dot green"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-container">
+    <!-- Left Sidebar: Settings panel -->
+    <section class="config-panel" id="config-panel">
+      <!-- LlmBridge System Profile Card (QuickChat Style) -->
+      <div class="system-profile-card">
+        <div class="profile-avatar">
+          <img src="llm_bridge_logo.png" alt="LlmBridge Logo" class="profile-logo-img">
+        </div>
+        <div class="profile-info">
+          <h4 class="gradient-text-flow">LlmBridge Kernel</h4>
+          <span class="profile-sub">Local Gateway Proxy</span>
+          <div class="profile-status">
+            <span class="status-dot"></span>
+            <span>Active</span>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="panel-title">模型通道与路由配置</h2>
+      
+      <!-- Channels Editor -->
+      <div class="config-section">
+        <div class="section-header">
+          <h3>LLM 通道列表</h3>
+          <button id="add-channel-btn" class="btn-text">+ 添加通道</button>
+        </div>
+        <div id="channels-list" class="channels-list">
+          <!-- Channels items dynamically rendered here -->
+        </div>
+      </div>
+
+      <!-- Fallback Chain -->
+      <div class="config-section">
+        <div class="section-header">
+          <h3>
+            自动降级链 (Fallback Chain)
+            <span class="info-tooltip-trigger" data-tooltip="发生故障时按自上而下的顺序自动尝试备用通道（可点击按钮调整优先级）。">ⓘ</span>
+          </h3>
+        </div>
+        <div id="fallback-chain-list" class="fallback-list">
+          <!-- Fallback chain items dynamically rendered here -->
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button id="save-config-btn" class="btn btn-primary w-full">保存配置</button>
+      </div>
+    </section>
+
+    <!-- Right Chat & Monitor Panel -->
+    <section class="chat-panel">
+      <!-- Chat Interface -->
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="chat-title-info">
+            <h2>对话调试</h2>
+            <div class="header-settings-bar">
+              <div class="selector-item">
+                <label class="switch-container">
+                  <span class="switch-toggle">
+                    <input type="checkbox" id="use-fast-model-toggle">
+                    <span class="switch-slider"></span>
+                  </span>
+                  <span class="switch-label">优先路由至快速模型 (Fast Model)</span>
+                </label>
+              </div>
+              <div class="selector-item">
+                <label for="chat-effort-select" class="settings-label">思考努力度: </label>
+                <!-- Hidden native select to preserve all existing JS bindings -->
+                <select id="chat-effort-select" style="display: none;">
+                  <option value="none" selected>关闭</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+                
+                <!-- Beautiful custom rounded select dropdown -->
+                <div class="custom-select">
+                  <div class="select-trigger">
+                    <span>关闭</span>
+                    <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </div>
+                  <div class="select-options">
+                    <div class="option selected" data-value="none">关闭</div>
+                    <div class="option" data-value="low">Low</div>
+                    <div class="option" data-value="medium">Medium</div>
+                    <div class="option" data-value="high">High</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="clear-chat-btn" class="btn btn-tertiary btn-sm">清空历史</button>
+        </div>
+
+        <div id="chat-messages" class="chat-messages">
+          <div class="system-message">
+            欢迎使用 LlmBridge 多模型流式对话桥接测试面板！请确保已在左侧配置相应的 API Key 后开始对话。
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <button type="button" id="upload-btn" class="btn-upload-side" title="上传图片或文本文件">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+          </button>
+          <input type="file" id="file-input" style="display: none;" accept="image/*,.txt,.md,.js,.ts,.py,.json,.html,.css,.csv">
+          
+          <div class="input-wrapper">
+            <!-- Selected File Badge (Pill) container -->
+            <div id="attachment-badge-container" class="attachment-badge-container"></div>
+            <textarea id="chat-input" placeholder="输入对话内容" rows="3"></textarea>
+          </div>
+          <button id="send-btn" class="btn btn-primary">发送 (Send)</button>
+        </div>
+      </div>
+
+      <!-- Real-time Console Log (Visual Routing Decider) -->
+      <div class="console-container">
+        <div class="console-header">
+          <h3>路由日志</h3>
+          <button id="clear-console-btn" class="btn btn-tertiary btn-xs">清空日志</button>
+        </div>
+        <div id="console-logs" class="console-logs">
+          <div class="log-line text-info">系统初始化完成，等待对话触发...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal for Adding/Editing Channel -->
+  <div id="channel-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="modal-title">添加新模型通道</h3>
+      <div class="form-group">
+        <label for="channel-id">通道唯一标识 (ID)</label>
+        <input type="text" id="channel-id" class="input-text" placeholder="e.g. gpt-4o">
+      </div>
+      <div class="form-group">
+        <label for="channel-name">显示名称 (Name)</label>
+        <input type="text" id="channel-name" class="input-text" placeholder="e.g. OpenAI GPT-4o">
+      </div>
+      <div class="form-group">
+        <label for="channel-url">接口 Base URL</label>
+        <input type="text" id="channel-url" class="input-text" placeholder="https://api.openai.com">
+      </div>
+      <div class="form-group">
+        <label for="channel-key">API Key (在浏览器本地只读，仅存储在服务端)</label>
+        <div class="input-password-wrapper">
+          <input type="password" id="channel-key" class="input-text" placeholder="sk-...">
+          <button type="button" id="toggle-key-visibility" class="btn-toggle-visibility">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="channel-model">主力模型名称 (Main Model Name)</label>
+        <input type="text" id="channel-model" class="input-text" placeholder="e.g. gpt-4o">
+      </div>
+      <div class="form-group">
+        <label for="channel-fast-model">快速模型名称 (Fast Model Name - 可选)</label>
+        <input type="text" id="channel-fast-model" class="input-text" placeholder="e.g. gpt-4o-mini">
+      </div>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="btn btn-tertiary">取消</button>
+        <button id="modal-save" class="btn btn-primary">确认保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Custom Confirm Dialog -->
+  <div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content confirm-modal-content" style="width: 300px; text-align: center;">
+      <h3 style="color: #ef4444; margin-bottom: 12px; font-size: 14px; font-weight: 700;">确认删除</h3>
+      <p id="confirm-message" style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;"></p>
+      <div class="modal-actions" style="margin-top: 0; justify-content: center; gap: 12px;">
+        <button id="confirm-cancel-btn" class="btn btn-tertiary btn-sm" style="min-width: 70px;">取消</button>
+        <button id="confirm-ok-btn" class="btn btn-danger btn-sm" style="min-width: 70px;">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

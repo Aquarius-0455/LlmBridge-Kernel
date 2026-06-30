@@ -1,0 +1,21 @@
+{
+  "channels": [
+    {
+      "id": "Claude",
+      "name": "Claude",
+      "baseUrl": "https://api.your-provider.com/v1",
+      "apiKey": "sk-your-mock-key-here",
+      "modelName": "claude-3-5-sonnet",
+      "fastModelName": "claude-3-5-haiku"
+    }
+  ],
+  "mappings": {
+    "planning": "Claude",
+    "execution": "Claude",
+    "analysis": "Claude",
+    "default": "Claude"
+  },
+  "fallbackChain": [
+    "Claude"
+  ]
+}
