@@ -10,9 +10,9 @@
 
 *   **极速流式转发 (Streaming Proxy)**：基于 Express 实现的超轻量转发，支持服务端事件流（SSE），完美兼容 OpenAI / Claude 兼容接口的实时打字机输出效果。
 *   **动态故障降级 (Fallback Chain)**：一旦首选模型通道发生异常（如欠费、限流 429、网络超时或证书错误），网关会自动且无缝地顺延尝试备用通道，保障线上业务的绝对连续性。
-*   **多模态图片自适应压缩**：前端集成 Canvas 算法，对上传的超大分辨率（如视网膜屏高分截图等）图片进行**智能等比限高压缩（默认上限 2048px）**，彻底避免 AWS Bedrock/Anthropic 的 `8000px` 物理阈值报错，极大地降低传输体积和 Token 消耗。
+*   **多模态图片自适应压缩**：前端集成 Canvas 算法，对上传的超大分辨率（如视网膜屏高分截图等）图片进行**智能等比限高压缩（默认上限 2048px）**，极大地降低传输体积和 Token 消耗。
 *   **极简暗黑视窗面板 (Sleek UI Panel)**：
-    *   **iOS 物理风格滑动开关**：控制 Fast Model 快速路由状态。
+    *   **物理风格滑动开关**：控制 Fast Model 快速路由状态。
     *   **实时路由调试控制台**：无间断滚动输出网关底层的重试与降级决策日志。
     *   **自定义 Promise 确认弹窗**：告别浏览器原生的阻断弹窗，体验纯净现代。
 *   **持久化配置**：所有的通道配置和路由规则通过面板配置后一键“保存配置”，在后端自动持久化写入本地 `config.json`。
@@ -26,7 +26,7 @@
 ![File Upload Button](docs/images/upload_btn.png)
 
 ### 对话调试微调设置 (iOS Slider & Capsule Selector)
-通过丝滑的 iOS 物理风格开关动态控制 Fast Model 优先路由，结合极简化去冗余描述的胶囊型思考努力度下拉菜单。
+通过开关动态控制 Fast Model 优先路由，结合极简化去冗余描述的胶囊型思考努力度下拉菜单。
 ![Settings Dropdown](docs/images/settings_dropdown.png)
 
 ### 毛玻璃高感遮罩模态框 (Glassmorphic Blur Dialog)
