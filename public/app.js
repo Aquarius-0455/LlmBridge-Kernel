@@ -313,6 +313,7 @@ function swapFallbackElements(idx1, idx2) {
   appConfig.fallbackChain[idx2] = temp;
   appendConsoleLog('info', `调整降级链优先级: [${appConfig.fallbackChain.join(' ➔ ')}]`);
   renderFallbackChain();
+  saveConfigToServer(true);
 }
 
 // Channel Add/Delete Ops
@@ -322,6 +323,7 @@ function deleteChannel(id) {
 
   appendConsoleLog('info', `已移除通道: ${id}`);
   renderUI();
+  saveConfigToServer(true);
 }
 
 // Modal handling
@@ -397,6 +399,7 @@ modalSaveBtn.addEventListener('click', () => {
 
   closeModal();
   renderUI();
+  saveConfigToServer(true);
 });
 
 // Modal cancel buttons
@@ -413,8 +416,8 @@ if (toggleKeyVisibilityBtn) {
   });
 }
 
-// Save config to disk (Backend Server)
-saveConfigBtn.addEventListener('click', async () => {
+// Helper to save config to server
+async function saveConfigToServer(quiet = false) {
   try {
     const response = await fetch('/api/config', {
       method: 'POST',
@@ -423,13 +426,24 @@ saveConfigBtn.addEventListener('click', async () => {
     });
     const resData = await response.json();
     if (resData.success) {
-      appendConsoleLog('success', '已将最新的模型路由与通道配置成功写入 config.json！');
-      showToast("配置保存成功！", "success");
+      if (!quiet) {
+        appendConsoleLog('success', '已将最新的模型路由与通道配置成功写入 config.json！');
+        showToast("配置保存成功！", "success");
+      } else {
+        appendConsoleLog('success', '配置已自动同步并保存。');
+      }
     }
   } catch (err) {
     appendConsoleLog('error', `写入配置失败: ${err.message}`);
-    alert("保存配置发生错误，详情请看控制台日志。");
+    if (!quiet) {
+      alert("保存配置发生错误，详情请看控制台日志。");
+    }
   }
+}
+
+// Save config to disk (Backend Server)
+saveConfigBtn.addEventListener('click', () => {
+  saveConfigToServer(false);
 });
 
 // Chat Dialog handling
