@@ -26,6 +26,10 @@ const addChannelBtn = document.getElementById('add-channel-btn');
 const saveConfigBtn = document.getElementById('save-config-btn');
 const useFastModelToggle = document.getElementById('use-fast-model-toggle');
 const chatEffortSelect = document.getElementById('chat-effort-select');
+const agentModeToggle = document.getElementById('agent-mode-toggle');
+const agentTurnsRow = document.getElementById('agent-turns-row');
+const agentMaxTurnsInput = document.getElementById('agent-max-turns');
+const agentTurnsBadge = document.getElementById('agent-turns-badge');
 
 // Modal Elements
 const channelModal = document.getElementById('channel-modal');
@@ -74,12 +78,58 @@ async function initApp() {
     console.error("加载配置失败:", err);
     updateServerStatus(false);
   }
-  
+
+  // Sync Agent Mode state from server
+  try {
+    const amResp = await fetch('/api/agent-mode');
+    const amData = await amResp.json();
+    agentModeToggle.checked = amData.agentMode;
+    agentMaxTurnsInput.value = amData.agentMaxTurns || 10;
+    setAgentModeUI(amData.agentMode, amData.agentMaxTurns || 10);
+  } catch (_) {}
+
+  // Agent Mode toggle event
+  agentModeToggle.addEventListener('change', async () => {
+    const enabled = agentModeToggle.checked;
+    const turns = parseInt(agentMaxTurnsInput.value) || 10;
+    try {
+      await fetch('/api/agent-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentMode: enabled, agentMaxTurns: turns })
+      });
+      setAgentModeUI(enabled, turns);
+      appendConsoleLog(enabled ? 'success' : 'info',
+        enabled ? `动脑模式已开启（最大 ${turns} 轮）` : '已关闭动脑模式');
+    } catch (e) {
+      appendConsoleLog('error', '动脑模式切换失败: ' + e.message);
+      agentModeToggle.checked = !enabled; // rollback
+    }
+  });
+
+  // Auto-save max turns on input change
+  agentMaxTurnsInput.addEventListener('change', async () => {
+    let turns = parseInt(agentMaxTurnsInput.value);
+    if (isNaN(turns) || turns < 1) turns = 1;
+    agentMaxTurnsInput.value = turns;
+    try {
+      await fetch('/api/agent-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentMaxTurns: turns })
+      });
+      setAgentModeUI(agentModeToggle.checked, turns);
+      appendConsoleLog('success', `最大思考轮数已更新为 ${turns} 轮`);
+    } catch (e) {
+      appendConsoleLog('error', '轮数保存失败: ' + e.message);
+    }
+  });
+
   // Initialize beautiful custom select bindings
   initCustomSelect();
   // Initialize dynamic multi-modal attachment upload bindings
   initFileUpload();
-  
+
   // Poll server health every 5 seconds dynamically
   setInterval(async () => {
     try {
@@ -89,6 +139,17 @@ async function initApp() {
       updateServerStatus(false);
     }
   }, 5000);
+}
+
+// Update Agent Mode UI state (toggle visibility of badge and disable input when ON)
+function setAgentModeUI(enabled, turns) {
+  agentMaxTurnsInput.disabled = enabled;
+  if (enabled) {
+    agentTurnsBadge.style.display = 'inline-flex';
+    agentTurnsBadge.textContent = `max ${turns}轮`;
+  } else {
+    agentTurnsBadge.style.display = 'none';
+  }
 }
 
 // Initialize Custom Select Dropdown UI

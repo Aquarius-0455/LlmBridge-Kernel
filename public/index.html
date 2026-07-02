@@ -52,6 +52,30 @@
         </div>
       </div>
 
+      <!-- 动脑模式配置 -->
+      <div class="config-section">
+        <div class="section-header">
+          <h3>
+            动脑模式
+            <span class="info-tooltip-trigger" data-tooltip="开启后，大模型将获得本地文件读写和执行命令的能力，自主思考直至完成任务。">ⓘ</span>
+          </h3>
+          <label class="switch-container">
+            <span class="switch-toggle">
+              <input type="checkbox" id="agent-mode-toggle">
+              <span class="switch-slider switch-slider--agent"></span>
+            </span>
+            <span class="switch-label" style="display:none;"></span>
+          </label>
+        </div>
+        <div id="agent-turns-row" class="form-group" style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+          <label for="agent-max-turns" style="margin-bottom: 0;">最大思考轮数 (Max Turns)</label>
+          <div style="display: flex; align-items: center;">
+            <input type="number" id="agent-max-turns" class="input-turns" min="1" max="30" value="10">
+            <span id="agent-turns-badge" class="agent-turns-badge" style="display:none; margin-left: 8px;"></span>
+          </div>
+        </div>
+      </div>
+
       <!-- Fallback Chain -->
       <div class="config-section">
         <div class="section-header">
@@ -87,6 +111,7 @@
                   <span class="switch-label">优先路由至快速模型 (Fast Model)</span>
                 </label>
               </div>
+
               <div class="selector-item">
                 <label for="chat-effort-select" class="settings-label">思考努力度: </label>
                 <!-- Hidden native select to preserve all existing JS bindings -->

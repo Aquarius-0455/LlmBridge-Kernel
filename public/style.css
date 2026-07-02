@@ -313,8 +313,9 @@ body {
   content: attr(data-tooltip);
   position: absolute;
   bottom: 150%;
-  left: 50%;
-  transform: translateX(-50%) scale(0.95);
+  left: -15px; /* Offset slightly to the left instead of centering */
+  transform: scale(0.95);
+  transform-origin: 20px bottom;
   background: #0f172a; /* Sleek dark navy card */
   color: #ffffff;
   padding: 8px 12px;
@@ -340,6 +341,7 @@ body {
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%) scale(0.95);
+  transform-origin: center bottom;
   border-width: 5px;
   border-style: solid;
   border-color: #0f172a transparent transparent transparent;
@@ -349,7 +351,10 @@ body {
   z-index: 100;
 }
 
-.info-tooltip-trigger:hover::after,
+.info-tooltip-trigger:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
 .info-tooltip-trigger:hover::before {
   opacity: 1;
   transform: translateX(-50%) scale(1);
@@ -1408,4 +1413,84 @@ body {
 .btn-danger:hover {
   background: linear-gradient(135deg, #dc2626, #b91c1c);
   box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);
+}
+
+/* ─── Agent Mode Toggle Styles ───────────────────────────────────── */
+
+/* 紫色专属滑块（区分普通蓝色 Fast Model 开关） */
+.switch-slider--agent {
+  background: #374151;
+}
+input[type="checkbox"]:checked + .switch-slider--agent {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+/* 轮数徽章（小胶囊） */
+.agent-turns-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  margin-left: 6px;
+  letter-spacing: 0.03em;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* 最大轮数设置行 */
+.agent-turns-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 2px 0;
+  animation: fadeSlideIn 0.2s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 轮数数字输入框 */
+.input-turns {
+  width: 48px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  transition: all 0.15s;
+}
+.input-turns:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.15);
+}
+.input-turns:disabled {
+  background: #f1f5f9;
+  color: var(--text-muted);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* 隐藏 input type=number 的原生上下箭头 (spinners) */
+.input-turns::-webkit-outer-spin-button,
+.input-turns::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input-turns[type=number] {
+  -moz-appearance: textfield;
 }
