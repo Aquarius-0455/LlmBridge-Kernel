@@ -186,9 +186,25 @@ app.post('/api/chat', async (req, res) => {
           'Content-Type': 'application/json'
         };
         
+        // Sanitize messages: DeepSeek and standard LLMs often reject multimodal arrays.
+        // We strip out 'image_url' and flatten to string if the model is DeepSeek/Llama.
+        const modelLower = modelToUse.toLowerCase();
+        const isTextOnly = modelLower.includes('deepseek') || modelLower.includes('llama');
+        
+        const sanitizedMessages = messages.map(msg => {
+          if (isTextOnly && Array.isArray(msg.content)) {
+            const textContent = msg.content
+              .filter(part => part.type === 'text')
+              .map(part => part.text)
+              .join('\n');
+            return { role: msg.role, content: textContent || ' ' };
+          }
+          return msg;
+        });
+
         requestBody = {
           model: modelToUse,
-          messages: messages,
+          messages: sanitizedMessages,
           stream: true
         };
 
