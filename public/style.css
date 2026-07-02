@@ -39,6 +39,52 @@ body {
 }
 
 /* Header styling */
+.thinking-area {
+  margin-bottom: 8px;
+  background-color: var(--bg-card-hover);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.thinking-area summary {
+  color: var(--text-muted);
+  cursor: pointer;
+  font-weight: 500;
+  list-style: none; /* Hide default arrow in some browsers */
+  display: flex;
+  align-items: center;
+}
+.thinking-area summary::-webkit-details-marker {
+  display: none; /* Safari */
+}
+.thinking-area summary::before {
+  content: '▶';
+  font-size: 10px;
+  margin-right: 6px;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+.thinking-area[open] summary::before {
+  transform: rotate(90deg);
+}
+.thinking-area[open] summary {
+  margin-bottom: 8px;
+}
+.thinking-content {
+  color: var(--text-muted);
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.loading-pulse {
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
 .app-header {
   display: flex;
   justify-content: space-between;

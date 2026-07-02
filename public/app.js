@@ -85,6 +85,10 @@ async function initApp() {
     const amData = await amResp.json();
     agentModeToggle.checked = amData.agentMode;
     agentMaxTurnsInput.value = amData.agentMaxTurns || 10;
+    if (appConfig) {
+      appConfig.agentMode = amData.agentMode;
+      appConfig.agentMaxTurns = amData.agentMaxTurns || 10;
+    }
     setAgentModeUI(amData.agentMode, amData.agentMaxTurns || 10);
   } catch (_) {}
 
@@ -98,6 +102,10 @@ async function initApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentMode: enabled, agentMaxTurns: turns })
       });
+      if (appConfig) {
+        appConfig.agentMode = enabled;
+        appConfig.agentMaxTurns = turns;
+      }
       setAgentModeUI(enabled, turns);
       appendConsoleLog(enabled ? 'success' : 'info',
         enabled ? `动脑模式已开启（最大 ${turns} 轮）` : '已关闭动脑模式');
@@ -118,6 +126,9 @@ async function initApp() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentMaxTurns: turns })
       });
+      if (appConfig) {
+        appConfig.agentMaxTurns = turns;
+      }
       setAgentModeUI(agentModeToggle.checked, turns);
       appendConsoleLog('success', `最大思考轮数已更新为 ${turns} 轮`);
     } catch (e) {
@@ -143,7 +154,7 @@ async function initApp() {
 
 // Update Agent Mode UI state (toggle visibility of badge and disable input when ON)
 function setAgentModeUI(enabled, turns) {
-  agentMaxTurnsInput.disabled = enabled;
+  agentMaxTurnsInput.disabled = !enabled;
   if (enabled) {
     agentTurnsBadge.style.display = 'inline-flex';
     agentTurnsBadge.textContent = `max ${turns}轮`;
@@ -472,7 +483,7 @@ async function sendMessage() {
   // Create real-time loading/reply bubble for streaming output
   const replyBubble = document.createElement('div');
   replyBubble.className = 'chat-bubble assistant';
-  replyBubble.innerText = '📡 正在启动智能体网关路由...';
+  replyBubble.innerHTML = '<span class="loading-pulse">⏳ 正在思考...</span>';
   chatMessagesEl.appendChild(replyBubble);
   chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
 
@@ -530,10 +541,10 @@ async function sendMessage() {
               appendConsoleLog(data.level, data.message, data.timestamp);
             } else if (data.type === 'thinking') {
               // Clear loader text on first chunk of thinking
-              if (replyBubble.innerText.startsWith('📡')) {
-                replyBubble.innerHTML = '<div class="thinking-area">思考过程：<span class="thinking-content"></span></div><div class="answer-area"></div>';
+              if (replyBubble.innerHTML.includes('loading-pulse')) {
+                replyBubble.innerHTML = '<details class="thinking-area"><summary>思考过程</summary><div class="thinking-content"></div></details><div class="answer-area"></div>';
               } else if (!replyBubble.querySelector('.thinking-area')) {
-                replyBubble.innerHTML = '<div class="thinking-area">思考过程：<span class="thinking-content"></span></div>' + replyBubble.innerHTML;
+                replyBubble.innerHTML = '<details class="thinking-area"><summary>思考过程</summary><div class="thinking-content"></div></details>' + replyBubble.innerHTML;
               }
               const thinkingEl = replyBubble.querySelector('.thinking-content');
               fullThinkingText += data.text;
@@ -541,7 +552,7 @@ async function sendMessage() {
               chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
             } else if (data.type === 'content') {
               // Clear loader text on first chunk of content
-              if (replyBubble.innerText.startsWith('📡')) {
+              if (replyBubble.innerHTML.includes('loading-pulse')) {
                 replyBubble.innerHTML = '<div class="answer-area"></div>';
               } else if (!replyBubble.querySelector('.answer-area')) {
                 replyBubble.innerHTML += '<div class="answer-area"></div>';
