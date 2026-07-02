@@ -2,7 +2,7 @@
 
 `LlmBridge` 是一个轻量级、零外部依赖的**大语言模型（LLM）流式调用与故障降级桥接网关**。它旨在为开发者提供一个拥有可视化调试面板的网关代理，支持多通道轮询、任务场景别名路由、流式断线自动降级（Fallback Chain）以及多模态图片大图等比压缩上传。
 
-![LlmBridge Gateway Full Interface](docs/images/full_interface.png)
+![LlmBridge Gateway Full Interface](docs/images/full_interface1.png)
 
 ---
 
