@@ -31,7 +31,7 @@
 
 ### 毛玻璃高感遮罩模态框 (Glassmorphic Blur Dialog)
 全局弹窗与新建通道卡片配备了高逼格的毛玻璃磨砂遮罩背景（`backdrop-filter: blur(4px)`），视觉感官极为 premium。
-![Modal Blur Overlay](docs/images/modal_overlay.png)
+![Modal Blur Overlay](docs/images/modal_overlay1.png)
 
 ---
 
