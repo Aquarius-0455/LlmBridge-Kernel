@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
-<body class="dark-mode">
+<body>
   <header class="app-header">
     <div class="header-left">
       <div class="mac-controls">
@@ -19,150 +19,223 @@
         <span class="mac-dot green"></span>
       </div>
     </div>
+    <div class="header-right">
+      <button id="theme-toggle" style="background: none; border: none; font-size: 12px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px;">
+        <span class="theme-icon">🌙</span> 暗色模式
+      </button>
+    </div>
   </header>
 
   <main class="app-container">
-    <!-- Left Sidebar: Settings panel -->
+    <!-- Left Sidebar: Channel Settings -->
     <section class="config-panel" id="config-panel">
-      <!-- LlmBridge System Profile Card (QuickChat Style) -->
-      <div class="system-profile-card">
-        <div class="profile-avatar">
-          <img src="llm_bridge_logo.png" alt="LlmBridge Logo" class="profile-logo-img">
-        </div>
-        <div class="profile-info">
-          <h4 class="gradient-text-flow">LlmBridge Kernel</h4>
-          <span class="profile-sub">Local Gateway Proxy</span>
-          <div class="profile-status">
-            <span class="status-dot"></span>
-            <span>Active</span>
+      <!-- Fixed Header -->
+      <div class="config-panel-header">
+        <!-- LlmBridge System Profile Card (QuickChat Style) -->
+        <div class="system-profile-card">
+          <div class="profile-avatar">
+            <img src="llm_bridge_logo.png" alt="LlmBridge Logo" class="profile-logo-img">
+          </div>
+          <div class="profile-info">
+            <h4 class="gradient-text-flow">LlmBridge Kernel</h4>
+            <span class="profile-sub">Local Gateway Proxy</span>
+            <div class="profile-status">
+              <span class="status-dot"></span>
+              <span>Active</span>
+            </div>
           </div>
         </div>
+        <h2 class="panel-title">模型通道与路由配置</h2>
       </div>
-
-      <h2 class="panel-title">模型通道与路由配置</h2>
       
-      <!-- Channels Editor -->
-      <div class="config-section">
-        <div class="section-header">
-          <h3>LLM 通道列表</h3>
-          <button id="add-channel-btn" class="btn-text">+ 添加通道</button>
+      <!-- Scrollable Body Content -->
+      <div class="config-panel-body">
+        <!-- Channels Editor -->
+        <div class="config-section">
+          <div class="section-header">
+            <h3>LLM 通道列表</h3>
+            <button id="add-channel-btn" class="btn-text">+ 添加通道</button>
+          </div>
+          <div id="channels-list" class="channels-list">
+            <!-- Channels items dynamically rendered here -->
+          </div>
         </div>
-        <div id="channels-list" class="channels-list">
-          <!-- Channels items dynamically rendered here -->
-        </div>
-      </div>
 
-      <!-- 动脑模式配置 -->
-      <div class="config-section">
-        <div class="section-header">
-          <h3>
-            动脑模式
-            <span class="info-tooltip-trigger" data-tooltip="开启后，大模型将获得本地文件读写和执行命令的能力，自主思考直至完成任务。">ⓘ</span>
-          </h3>
-          <label class="switch-container">
-            <span class="switch-toggle">
-              <input type="checkbox" id="agent-mode-toggle">
-              <span class="switch-slider switch-slider--agent"></span>
-            </span>
-            <span class="switch-label" style="display:none;"></span>
-          </label>
-        </div>
-        <div id="agent-turns-row" class="form-group" style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
-          <label for="agent-max-turns" style="margin-bottom: 0;">最大思考轮数 (Max Turns)</label>
-          <div style="display: flex; align-items: center;">
-            <input type="number" id="agent-max-turns" class="input-turns" min="1" max="30" value="10">
-            <span id="agent-turns-badge" class="agent-turns-badge" style="display:none; margin-left: 8px;"></span>
+        <!-- Fallback Chain -->
+        <div class="config-section">
+          <div class="section-header">
+            <h3>
+              自动降级链 (Fallback Chain)
+              <span class="info-tooltip-trigger tooltip-down" style="--tt-x: -65%;" data-tooltip="发生故障时按自上而下的顺序自动尝试备用通道（可点击按钮调整优先级）。">ⓘ</span>
+            </h3>
+          </div>
+          <div id="fallback-chain-list" class="fallback-list">
+            <!-- Fallback chain items dynamically rendered here -->
           </div>
         </div>
       </div>
 
-      <!-- Fallback Chain -->
-      <div class="config-section">
-        <div class="section-header">
-          <h3>
-            自动降级链 (Fallback Chain)
-            <span class="info-tooltip-trigger" data-tooltip="发生故障时按自上而下的顺序自动尝试备用通道（可点击按钮调整优先级）。">ⓘ</span>
-          </h3>
+      <!-- Fixed Footer -->
+      <div class="config-panel-footer">
+        <div class="action-bar">
+          <button id="save-config-btn" class="btn btn-primary w-full">保存配置</button>
         </div>
-        <div id="fallback-chain-list" class="fallback-list">
-          <!-- Fallback chain items dynamically rendered here -->
-        </div>
-      </div>
-
-      <div class="action-bar">
-        <button id="save-config-btn" class="btn btn-primary w-full">保存配置</button>
       </div>
     </section>
+    <!-- Right Content Area -->
+    <div class="main-content-panel">
+      <!-- Top Layout Row: Chat & Runtime Settings -->
+      <div class="top-layout-row">
+        <!-- Middle: Chat playground -->
+        <div class="chat-container">
+          <div class="chat-header">
+            <div class="chat-title-info">
+              <h2>对话调试</h2>
+              <div class="header-settings-bar">
+                <div class="selector-item">
+                  <label class="switch-container">
+                    <span class="switch-toggle">
+                      <input type="checkbox" id="use-fast-model-toggle">
+                      <span class="switch-slider"></span>
+                    </span>
+                    <span class="switch-label">优先路由至快速模型 (Fast Model)</span>
+                  </label>
+                </div>
 
-    <!-- Right Chat & Monitor Panel -->
-    <section class="chat-panel">
-      <!-- Chat Interface -->
-      <div class="chat-container">
-        <div class="chat-header">
-          <div class="chat-title-info">
-            <h2>对话调试</h2>
-            <div class="header-settings-bar">
-              <div class="selector-item">
-                <label class="switch-container">
-                  <span class="switch-toggle">
-                    <input type="checkbox" id="use-fast-model-toggle">
-                    <span class="switch-slider"></span>
-                  </span>
-                  <span class="switch-label">优先路由至快速模型 (Fast Model)</span>
-                </label>
-              </div>
-
-              <div class="selector-item">
-                <label for="chat-effort-select" class="settings-label">思考努力度: </label>
-                <!-- Hidden native select to preserve all existing JS bindings -->
-                <select id="chat-effort-select" style="display: none;">
-                  <option value="none" selected>关闭</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-                
-                <!-- Beautiful custom rounded select dropdown -->
-                <div class="custom-select">
-                  <div class="select-trigger">
-                    <span>关闭</span>
-                    <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  </div>
-                  <div class="select-options">
-                    <div class="option selected" data-value="none">关闭</div>
-                    <div class="option" data-value="low">Low</div>
-                    <div class="option" data-value="medium">Medium</div>
-                    <div class="option" data-value="high">High</div>
+                <div class="selector-item">
+                  <label for="chat-effort-select" class="settings-label">思考努力度: </label>
+                  <!-- Hidden native select to preserve all existing JS bindings -->
+                  <select id="chat-effort-select" style="display: none;">
+                    <option value="none" selected>关闭</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                  
+                  <!-- Beautiful custom rounded select dropdown -->
+                  <div class="custom-select">
+                    <div class="select-trigger">
+                      <span>关闭</span>
+                      <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    <div class="select-options">
+                      <div class="option selected" data-value="none">关闭</div>
+                      <div class="option" data-value="low">Low</div>
+                      <div class="option" data-value="medium">Medium</div>
+                      <div class="option" data-value="high">High</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            <button id="clear-chat-btn" class="btn btn-tertiary btn-sm">清空历史</button>
           </div>
-          <button id="clear-chat-btn" class="btn btn-tertiary btn-sm">清空历史</button>
+
+          <div id="chat-messages" class="chat-messages">
+            <div class="system-message">
+              欢迎使用 LlmBridge 多模型流式对话桥接测试面板！请确保已在左侧配置相应的 API Key 后开始对话。
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <button type="button" id="upload-btn" class="btn-upload-side" title="上传图片或文本文件">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+            </button>
+            <input type="file" id="file-input" style="display: none;" accept="image/*,.txt,.md,.js,.ts,.py,.json,.html,.css,.csv">
+            
+            <div class="input-wrapper">
+              <!-- Selected File Badge (Pill) container -->
+              <div id="attachment-badge-container" class="attachment-badge-container"></div>
+              <textarea id="chat-input" placeholder="输入对话内容" rows="3"></textarea>
+            </div>
+            <button id="send-btn" class="btn btn-primary">发送 (Send)</button>
+          </div>
         </div>
 
-        <div id="chat-messages" class="chat-messages">
-          <div class="system-message">
-            欢迎使用 LlmBridge 多模型流式对话桥接测试面板！请确保已在左侧配置相应的 API Key 后开始对话。
-          </div>
-        </div>
+        <!-- Right Sidebar: Runtime Settings -->
+        <section class="right-panel" id="right-panel">
+          <!-- 动脑模式配置 -->
+          <div class="config-section">
+            <div class="section-header">
+              <h3>
+                动脑模式
+                <span class="info-tooltip-trigger tooltip-down" style="--tt-x: -15%;" data-tooltip="开启后，大模型将获得本地文件读写和执行命令的能力，自主思考直至完成任务。">ⓘ</span>
+              </h3>
+              <label class="switch-container">
+                <span class="switch-toggle">
+                  <input type="checkbox" id="agent-mode-toggle">
+                  <span class="switch-slider switch-slider--agent"></span>
+                </span>
+                <span class="switch-label" style="display:none;"></span>
+              </label>
+            </div>
 
-        <div class="chat-input-area">
-          <button type="button" id="upload-btn" class="btn-upload-side" title="上传图片或文本文件">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-          </button>
-          <input type="file" id="file-input" style="display: none;" accept="image/*,.txt,.md,.js,.ts,.py,.json,.html,.css,.csv">
-          
-          <div class="input-wrapper">
-            <!-- Selected File Badge (Pill) container -->
-            <div id="attachment-badge-container" class="attachment-badge-container"></div>
-            <textarea id="chat-input" placeholder="输入对话内容" rows="3"></textarea>
+            <!-- Native Tools Info (Visible when Agent Mode is on) -->
+            <div id="native-tools-info" style="display: none; margin-top: 6px; padding: 8px 10px; background: rgba(37,99,235,0.04); border-radius: 6px; border: 1px dashed rgba(37,99,235,0.2); font-size: 11px; color: var(--text-muted); flex-direction: column; gap: 4px;">
+               <div style="display: flex; align-items: center; justify-content: space-between;">
+                 <span style="font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 4px;">
+                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                   原生内置工具
+                 </span>
+                 <span class="model-tag main-model-tag" style="background: rgba(37,99,235,0.1); color: #2563eb; border-color: rgba(37,99,235,0.2);">7 个已就绪</span>
+               </div>
+               <span style="font-size: 10px; line-height: 1.4;">系统已默认挂载: read_file, write_file, list_dir, create_dir, delete_file, run_command, get_current_time 操作系统能力。</span>
+            </div>
+
+            <div id="agent-turns-row" class="form-group" style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+              <label for="agent-max-turns" style="margin-bottom: 0;">最大思考轮数 (Max Turns)</label>
+              <div style="display: flex; align-items: center;">
+                <input type="number" id="agent-max-turns" class="input-turns" min="1" max="30" value="10">
+                <span id="agent-turns-badge" class="agent-turns-badge" style="display:none; margin-left: 8px;"></span>
+              </div>
+            </div>
           </div>
-          <button id="send-btn" class="btn btn-primary">发送 (Send)</button>
-        </div>
+
+          <!-- MCP 扩展工具配置 -->
+          <div class="config-section">
+            <div class="section-header">
+              <h3>
+                MCP 扩展工具
+                <span class="info-tooltip-trigger tooltip-down" style="--tt-x: -35%;" data-tooltip="启用 Model Context Protocol (MCP)，允许智能体动态拉起或连接第三方工具（如 Brave 搜索、网页抓取等）。">ⓘ</span>
+              </h3>
+              <label class="switch-container">
+                <span class="switch-toggle">
+                  <input type="checkbox" id="mcp-enabled-toggle">
+                  <span class="switch-slider switch-slider--agent"></span>
+                </span>
+              </label>
+            </div>
+            
+            <!-- MCP Servers List -->
+            <div id="mcp-servers-container" style="display: none; margin-top: 6px;">
+              <div id="mcp-list" class="channels-list" style="max-height: 180px;">
+                <!-- MCP Server cards will be rendered dynamically -->
+              </div>
+              <button id="add-mcp-btn" class="btn btn-secondary w-full" style="margin-top: 8px; font-size: 11px; padding: 6px 12px; height: 28px; line-height: 14px;">+ 添加 MCP 服务器</button>
+            </div>
+          </div>
+
+          <!-- System Prompt 配置 -->
+          <details class="config-section" open style="border: none; padding: 0; outline: none; margin-bottom: 4px;">
+            <summary class="section-header" style="cursor: pointer; list-style: none; outline: none; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+              <h3 style="margin: 0; display: inline-flex; align-items: center; gap: 4px;">
+                系统提示词 (System Prompt)
+                <span class="info-tooltip-trigger tooltip-down" style="--tt-x: -65%;" data-tooltip="设置智能体的核心行为规范。建议在此声明操作系统类型、工具调用风格和输出格式要求。">ⓘ</span>
+              </h3>
+              <span class="details-arrow" style="font-size: 9px; color: var(--text-muted); transition: transform 0.2s; margin-left: auto;">▼</span>
+            </summary>
+            <textarea
+              id="system-prompt-input"
+              class="input-text"
+              rows="12"
+              placeholder="例如：你是一个运行在 Windows 系统上的编程助理，请始终使用 Windows 命令..."
+              style="width: 100%; height: 400px; resize: vertical; font-family: var(--font-mono); font-size: 11px; line-height: 1.6; margin-top: 8px;"
+            ></textarea>
+          </details>
+        </section>
       </div>
 
-      <!-- Real-time Console Log (Visual Routing Decider) -->
+      <!-- Bottom Layout Row: Console Log -->
       <div class="console-container">
         <div class="console-header">
           <h3>路由日志</h3>
@@ -172,7 +245,7 @@
           <div class="log-line text-info">系统初始化完成，等待对话触发...</div>
         </div>
       </div>
-    </section>
+    </div>
   </main>
 
   <!-- Modal for Adding/Editing Channel -->
@@ -214,11 +287,68 @@
       </div>
     </div>
   </div>
+  <!-- Modal for Adding/Editing MCP Server -->
+  <div id="mcp-modal" class="modal-overlay">
+    <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+      <h3 id="mcp-modal-title">添加 MCP 服务器</h3>
+      
+      <div class="form-group">
+        <label for="mcp-template-select">选择配置模板</label>
+        <select id="mcp-template-select" class="input-text" style="background-color: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 6px 10px; font-size: 12px; width: 100%;">
+          <option value="fetch">Fetch 网页抓取 (免 Key)</option>
+          <option value="brave-search">Brave 网页搜索 (需要 API Key)</option>
+          <option value="sqlite">SQLite 数据库只读浏览器</option>
+          <option value="custom-stdio">自定义 Stdio (本地命令行模式)</option>
+          <option value="custom-sse">自定义 SSE (远程网络连接模式)</option>
+        </select>
+      </div>
+
+      <!-- General Config -->
+      <div class="form-group">
+        <label for="mcp-id">服务器唯一标识 (ID)</label>
+        <input type="text" id="mcp-id" class="input-text" placeholder="e.g. fetch">
+      </div>
+      
+      <div class="form-group">
+        <label for="mcp-name">显示名称 (Name)</label>
+        <input type="text" id="mcp-name" class="input-text" placeholder="e.g. Web Fetcher">
+      </div>
+
+      <!-- stdio fields (shown for stdio/templates) -->
+      <div id="mcp-stdio-fields">
+        <div class="form-group">
+          <label for="mcp-command">Command (执行指令)</label>
+          <input type="text" id="mcp-command" class="input-text" placeholder="e.g. npx">
+        </div>
+        <div class="form-group">
+          <label for="mcp-args">Arguments (指令参数，空格分隔)</label>
+          <input type="text" id="mcp-args" class="input-text" placeholder="e.g. -y @modelcontextprotocol/server-fetch">
+        </div>
+        <div class="form-group">
+          <label for="mcp-env">环境变量 (JSON 格式，可选)</label>
+          <textarea id="mcp-env" class="input-text" rows="3" placeholder='e.g. { "BRAVE_API_KEY": "xxx" }' style="font-family: var(--font-mono); font-size: 11px;"></textarea>
+        </div>
+      </div>
+
+      <!-- sse fields (shown for sse) -->
+      <div id="mcp-sse-fields" style="display: none;">
+        <div class="form-group">
+          <label for="mcp-url">SSE 服务的 URL (以 /sse 结尾)</label>
+          <input type="text" id="mcp-url" class="input-text" placeholder="e.g. http://localhost:3012/sse">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="mcp-modal-cancel" class="btn btn-tertiary">取消</button>
+        <button id="mcp-modal-save" class="btn btn-primary">确认保存</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal for Custom Confirm Dialog -->
   <div id="confirm-modal" class="modal-overlay">
     <div class="modal-content confirm-modal-content" style="width: 300px; text-align: center;">
-      <h3 style="color: #ef4444; margin-bottom: 12px; font-size: 14px; font-weight: 700;">确认删除</h3>
+      <h3 id="confirm-title" style="color: #ef4444; margin-bottom: 12px; font-size: 14px; font-weight: 700;">确认操作</h3>
       <p id="confirm-message" style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;"></p>
       <div class="modal-actions" style="margin-top: 0; justify-content: center; gap: 12px;">
         <button id="confirm-cancel-btn" class="btn btn-tertiary btn-sm" style="min-width: 70px;">取消</button>
@@ -227,6 +357,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

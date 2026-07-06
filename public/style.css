@@ -20,6 +20,21 @@
   --transition-speed: 0.2s;
 }
 
+body.dark-mode {
+  --bg-primary: #0f172a;
+  --bg-panel: #1e293b;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --accent-color: #3b82f6;
+  --accent-hover: #60a5fa;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --border-hover: #475569;
+  --shadow-window: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -180,17 +195,78 @@ body {
 
 /* Left Sidebar - QuickChat Profile + List panel */
 .config-panel {
+  width: 280px;
+  min-width: 280px;
+  background: var(--bg-panel);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  box-shadow: var(--shadow-window);
+}
+
+/* Right Content Panel - Contains Chat, settings and bottom logs */
+.main-content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Top Layout Row - Holds chat and right sidebar settings side-by-side */
+.top-layout-row {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* Right Sidebar - Advanced Runtime Settings */
+.right-panel {
   width: 290px;
   min-width: 290px;
   background: var(--bg-panel);
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--border-color);
-  padding: 20px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: var(--shadow-window);
+  flex-shrink: 0;
+}
+
+.config-panel-header {
+  padding: 20px 20px 12px 20px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.config-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: hidden; /* Lock the panel height */
-  box-shadow: var(--shadow-window);
+}
+
+.config-panel-footer {
+  padding: 12px 20px 20px 20px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-panel);
 }
 
 /* Profile Card style to match QuickChat card */
@@ -261,10 +337,10 @@ body {
     background-position: 200% center;
   }
   3.33% {
-    background-position: 80% center; /* Safely push lavender light out of bounds during quiet state */
+    background-position: -200% center; /* Push light completely past the right edge */
   }
   100% {
-    background-position: 80% center; /* Keep text solid blue/purple for the remaining 58s */
+    background-position: -200% center; /* Wait quietly for the rest of the 60s cycle */
   }
 }
 
@@ -359,9 +435,9 @@ body {
   content: attr(data-tooltip);
   position: absolute;
   bottom: 150%;
-  left: -15px; /* Offset slightly to the left instead of centering */
-  transform: scale(0.95);
-  transform-origin: 20px bottom;
+  left: 50%;
+  transform: translateX(var(--tt-x, -50%)) scale(0.95);
+  transform-origin: center bottom;
   background: #0f172a; /* Sleek dark navy card */
   color: #ffffff;
   padding: 8px 12px;
@@ -399,11 +475,52 @@ body {
 
 .info-tooltip-trigger:hover::after {
   opacity: 1;
-  transform: scale(1);
+  transform: translateX(var(--tt-x, -50%)) scale(1);
 }
 .info-tooltip-trigger:hover::before {
   opacity: 1;
   transform: translateX(-50%) scale(1);
+}
+
+/* Tooltip alignment helpers depending on trigger location */
+.info-tooltip-trigger.tooltip-left::after {
+  left: -10px;
+  right: auto;
+  transform: scale(0.95);
+  transform-origin: 15px bottom;
+}
+.info-tooltip-trigger.tooltip-left:hover::after {
+  transform: scale(1);
+}
+
+.info-tooltip-trigger.tooltip-right::after {
+  right: -10px;
+  left: auto;
+  transform: scale(0.95);
+  transform-origin: calc(100% - 15px) bottom;
+}
+.info-tooltip-trigger.tooltip-right:hover::after {
+  transform: scale(1);
+}
+
+/* Tooltip popping DOWN to prevent top clipping */
+.info-tooltip-trigger.tooltip-down::after {
+  bottom: auto;
+  top: 150%;
+  transform-origin: center top;
+}
+.info-tooltip-trigger.tooltip-down::before {
+  bottom: auto;
+  top: 125%;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #0f172a transparent;
+  transform-origin: center top;
+}
+.info-tooltip-trigger.tooltip-down.tooltip-left::after {
+  left: -10px;
+  right: auto;
+  transform-origin: 15px top;
 }
 
 .section-desc {
@@ -418,8 +535,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 220px; /* Allow up to ~2.5 cards before scrolling */
-  overflow-y: auto;
   padding-right: 4px;
 }
 
@@ -458,13 +573,12 @@ body {
   gap: 6px;
   margin-top: 4px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 /* Beautiful tiny model pill tags, replicating the BETA badge look */
 .model-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   padding: 2px 6px;
   border-radius: 4px; /* Soft rounding */
   font-size: 9px;
@@ -473,6 +587,10 @@ body {
   text-transform: none;
   font-family: var(--font-mono);
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* Light blue tag for Main model */
@@ -502,8 +620,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 160px; /* Allow up to ~2.5 cards before scrolling */
-  overflow-y: auto;
   padding-right: 4px;
 }
 
@@ -623,13 +739,14 @@ body {
 .chat-panel {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 16px;
   overflow: hidden;
 }
 
 .chat-container {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg-panel);
@@ -1539,4 +1656,320 @@ input[type="checkbox"]:checked + .switch-slider--agent {
 }
 .input-turns[type=number] {
   -moz-appearance: textfield;
+}
+
+/* 响应式布局：在屏幕宽度较小时自动退回上下垂直堆叠布局 */
+@media (max-width: 1024px) {
+  .app-container {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .config-panel, .right-panel {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+  }
+  .right-settings-card {
+    max-height: none;
+  }
+  .console-container {
+    height: 200px;
+    min-height: 200px;
+  }
+}
+
+/* 折叠小箭头动画 */
+details[open] .details-arrow {
+  transform: rotate(180deg);
+}
+
+/* --- Comprehensive Dark Mode Component Overrides --- */
+body.dark-mode .chat-messages {
+  background: var(--bg-primary);
+}
+body.dark-mode .header-settings-bar,
+body.dark-mode .input-wrapper,
+body.dark-mode .thinking-block {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .input-wrapper:focus-within {
+  background: var(--bg-panel);
+}
+body.dark-mode .input-text, 
+body.dark-mode .input-select,
+body.dark-mode .input-turns {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+body.dark-mode .input-text:focus,
+body.dark-mode .input-select:focus,
+body.dark-mode .input-turns:focus {
+  background: var(--bg-panel) !important;
+}
+body.dark-mode .input-text:-webkit-autofill,
+body.dark-mode .input-text:-webkit-autofill:hover,
+body.dark-mode .input-text:-webkit-autofill:focus,
+body.dark-mode .input-select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-card) inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+}
+body.dark-mode .btn-secondary,
+body.dark-mode .btn-order,
+body.dark-mode .btn-upload-side:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: var(--border-hover);
+}
+body.dark-mode .chat-bubble.assistant {
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 220px;
+  max-width: 320px;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* Elegant left border styling for toast states, avoiding emoji look */
+.toast.success {
+  border-left: 3px solid #22c55e;
+}
+
+.toast.error {
+  border-left: 3px solid #ef4444;
+}
+
+.toast.info {
+  border-left: 3px solid #3b82f6;
+}
+
+.toast span {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Beautiful red confirm button for destructive actions */
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 6px rgba(220, 38, 38, 0.15);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);
+}
+
+/* ─── Agent Mode Toggle Styles ───────────────────────────────────── */
+
+/* 紫色专属滑块（区分普通蓝色 Fast Model 开关） */
+.switch-slider--agent {
+  background: #374151;
+}
+input[type="checkbox"]:checked + .switch-slider--agent {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+/* 轮数徽章（小胶囊） */
+.agent-turns-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  margin-left: 6px;
+  letter-spacing: 0.03em;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* 最大轮数设置行 */
+.agent-turns-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 2px 0;
+  animation: fadeSlideIn 0.2s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 轮数数字输入框 */
+.input-turns {
+  width: 48px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  transition: all 0.15s;
+}
+.input-turns:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.15);
+}
+.input-turns:disabled {
+  background: #f1f5f9;
+  color: var(--text-muted);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* 隐藏 input type=number 的原生上下箭头 (spinners) */
+.input-turns::-webkit-outer-spin-button,
+.input-turns::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input-turns[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* 响应式布局：在屏幕宽度较小时自动退回上下垂直堆叠布局 */
+@media (max-width: 1024px) {
+  .app-container {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .config-panel, .right-panel {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+  }
+  .right-settings-card {
+    max-height: none;
+  }
+  .console-container {
+    height: 200px;
+    min-height: 200px;
+  }
+}
+
+/* 折叠小箭头动画 */
+details[open] .details-arrow {
+  transform: rotate(180deg);
+}
+
+/* --- Comprehensive Dark Mode Component Overrides --- */
+body.dark-mode .chat-messages {
+  background: var(--bg-primary);
+}
+body.dark-mode .header-settings-bar,
+body.dark-mode .input-wrapper,
+body.dark-mode .thinking-block {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+body.dark-mode .input-wrapper:focus-within {
+  background: var(--bg-panel);
+}
+body.dark-mode .input-text, 
+body.dark-mode .input-select,
+body.dark-mode .input-turns {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+body.dark-mode .input-text:focus,
+body.dark-mode .input-select:focus,
+body.dark-mode .input-turns:focus {
+  background: var(--bg-panel) !important;
+}
+body.dark-mode .input-text:-webkit-autofill,
+body.dark-mode .input-text:-webkit-autofill:hover,
+body.dark-mode .input-text:-webkit-autofill:focus,
+body.dark-mode .input-select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-card) inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+}
+body.dark-mode .btn-secondary,
+body.dark-mode .btn-order,
+body.dark-mode .btn-upload-side:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: var(--border-hover);
+}
+body.dark-mode .chat-bubble.assistant {
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+body.dark-mode .main-model-tag {
+  background-color: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.2);
+}
+body.dark-mode .fast-model-tag {
+  background-color: rgba(168, 85, 247, 0.1);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.2);
+}
+body.dark-mode .console-header {
+  background: var(--bg-card);
+}
+body.dark-mode .console-logs {
+  background: var(--bg-primary);
+}
+body.dark-mode .log-line {
+  color: #e2e8f0;
+}
+body.dark-mode .attachment-badge {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+body.dark-mode .toast {
+  background: var(--bg-panel);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+body.dark-mode .input-turns:disabled {
+  background: var(--bg-card-hover);
+  color: var(--text-muted);
+}
+body.dark-mode .select-trigger {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+body.dark-mode .select-options {
+  background: var(--bg-panel);
+  border-color: var(--border-color);
+}
+body.dark-mode .select-options .option {
+  color: var(--text-main);
+}
+body.dark-mode .select-options .option:hover {
+  background-color: var(--bg-card-hover);
+}
+body.dark-mode .select-options .option.selected {
+  background-color: rgba(96, 165, 250, 0.15);
+  color: #60a5fa;
 }
